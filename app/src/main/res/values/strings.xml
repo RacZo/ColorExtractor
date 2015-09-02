@@ -3,4 +3,15 @@
     <string name="action_change_image">Change Image</string>
     <string name="action_about">About</string>
     <string name="git_hub_repo_url">https://github.com/RacZo/ColorExtractor</string>
+
+    <string name="color_vibrant">Color Vibrant</string>
+    <string name="color_muted_light">Color Muted Light</string>
+    <string name="color_muted_dark">Color Muted Dark</string>
+    <string name="swatch_vibrant">Swatch Vibrant</string>
+    <string name="swatch_vibrant_light">Swatch Vibrant Light</string>
+    <string name="swatch_vibrant_dark">Swatch Vibrant Dark</string>
+    <string name="swatch_muted">Swatch Muted</string>
+    <string name="swatch_muted_light">Swatch Muted Light</string>
+    <string name="swatch_muted_dark">Swatch Muted Dark</string>
+
 </resources>

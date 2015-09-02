@@ -1,3 +1,14 @@
+/***
+ * Copyright (c) 2015 Oscar Salguero www.oscarsalguero.com
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.oscarsalguero.utils;
 
 import android.app.Activity;
@@ -44,7 +55,7 @@ public class ImageUtils {
         return BitmapFactory.decodeStream(activity.getContentResolver().openInputStream(selectedImage), null, o2);
     }
 
-    public static Bitmap getBitmapWithCorrectOrientation(Bitmap bitmap, Uri uri){
+    public static Bitmap getBitmapWithCorrectOrientation(Bitmap bitmap, Uri uri) {
         Bitmap resizedBitmap = null;
         try {
             resizedBitmap = null;
@@ -84,12 +95,12 @@ public class ImageUtils {
         return resizedBitmap;
     }
 
-    public static Uri getOutputMediaFileUriUsingExternalStorageDirectory(){
-        String folderAndFileNamePrefix = "colorextractor";
-        File imagesFolder = new File(Environment.getExternalStorageDirectory() + File.separator + folderAndFileNamePrefix + File.separator);
+    public static Uri getOutputMediaFileUriUsingExternalStorageDirectory() {
+        String folderName = "com.oscarsalguero.colorextractor";
+        File imagesFolder = new File(Environment.getExternalStorageDirectory() + File.separator + folderName + File.separator);
         imagesFolder.mkdirs();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileName = folderAndFileNamePrefix + timeStamp + ".jpg";
+        String fileName = "colorext_" + timeStamp + ".jpg";
         File imageFile = new File(imagesFolder, fileName);
         Uri outputFileUri = Uri.fromFile(imageFile);
         Log.d(LOG_TAG, "Output file URI: " + outputFileUri.toString());

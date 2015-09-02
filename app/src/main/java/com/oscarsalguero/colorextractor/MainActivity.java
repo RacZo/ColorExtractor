@@ -1,3 +1,14 @@
+/***
+ * Copyright (c) 2015 Oscar Salguero www.oscarsalguero.com
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.oscarsalguero.colorextractor;
 
 import android.app.Activity;
@@ -21,7 +32,6 @@ import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,33 +50,40 @@ public class MainActivity extends AppCompatActivity {
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private static final String LOG_TAG = MainActivity.class.getName();
     private ImageView imageViewInput;
-    private TextView textViewVibrant;
-    private TextView textViewVibrantLight;
-    private TextView textViewVibrantDark;
-    private TextView textViewMuted;
-    private TextView textViewMutedLight;
-    private TextView textViewMutedDark;
+    private TextView textViewColorVibrant;
+    private TextView textViewColorMutedDark;
+    private TextView textViewColorMutedLight;
+    private TextView textViewSwatchVibrant;
+    private TextView textViewSwatchVibrantLight;
+    private TextView textViewSwatchVibrantDark;
+    private TextView textViewSwatchMuted;
+    private TextView textViewSwatchMutedLight;
+    private TextView textViewSwatchMutedDark;
     private ActionBar actionBar;
     private Uri outputFileUri;
+    private static final String EMPTY_SPACE = " ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         actionBar = getSupportActionBar();
-        if(actionBar!=null) {
+        if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setHomeAsUpIndicator(R.mipmap.ic_launcher);
         }
         imageViewInput = (ImageView) findViewById(R.id.image_view_input);
-        textViewVibrant = (TextView) findViewById(R.id.text_view_vibrant);
-        textViewVibrantLight = (TextView) findViewById(R.id.text_view_vibrant_light);
-        textViewVibrantDark = (TextView) findViewById(R.id.text_view_vibrant_dark);
-        textViewMuted = (TextView) findViewById(R.id.text_view_muted);
-        textViewMutedLight = (TextView) findViewById(R.id.text_view_muted_light);
-        textViewMutedDark = (TextView) findViewById(R.id.text_view_muted_dark);
+        textViewColorVibrant = (TextView) findViewById(R.id.text_view_vibrant);
+        textViewColorMutedDark = (TextView) findViewById(R.id.text_view_muted_dark);
+        textViewColorMutedLight = (TextView) findViewById(R.id.text_view_muted_light);
+        textViewSwatchVibrant = (TextView) findViewById(R.id.text_view_swatch_vibrant);
+        textViewSwatchVibrantLight = (TextView) findViewById(R.id.text_view_swatch_vibrant_light);
+        textViewSwatchVibrantDark = (TextView) findViewById(R.id.text_view_swatch_vibrant_dark);
+        textViewSwatchMuted = (TextView) findViewById(R.id.text_view_swatch_muted);
+        textViewSwatchMutedLight = (TextView) findViewById(R.id.text_view_swatch_muted_light);
+        textViewSwatchMutedDark = (TextView) findViewById(R.id.text_view_swatch_muted_dark);
         // Converting the default image into a bitmap
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_test_image);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_flag_sv);
         // Updating UI
         updateUI(bitmap);
     }
@@ -84,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        switch (id){
+        switch (id) {
             case R.id.action_change_image:
                 openImagePicker();
                 break;
@@ -98,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void openImagePicker(){
+    private void openImagePicker() {
         outputFileUri = ImageUtils.getOutputMediaFileUriUsingExternalStorageDirectory();
         final List<Intent> cameraIntents = new ArrayList<Intent>();
         final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -144,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     try {
                         // Getting image from camera
-                        Log.d(LOG_TAG, "Reading camera captured image from URI: " + outputFileUri.toString());
+                        Log.d(LOG_TAG, "Reading image captured via camera from URI: " + outputFileUri.toString());
                         Bitmap bitmapFromIntent = MediaStore.Images.Media.getBitmap(this.getContentResolver(), outputFileUri);
                         Bitmap bitmapWithCorrectOrientation = ImageUtils.getBitmapWithCorrectOrientation(bitmapFromIntent, outputFileUri);
                         if (bitmapWithCorrectOrientation != null) {
@@ -158,54 +175,79 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-
         }
     }
 
     private void setImage(Bitmap bitmap) {
         // Updating UI
-        imageViewInput.setImageBitmap(bitmap);
-        imageViewInput.setVisibility(View.VISIBLE);
         updateUI(bitmap);
     }
 
-    private void updateUI(Bitmap bitmap){
+    private void updateUI(Bitmap bitmap) {
+        // Setting image
+        imageViewInput.setImageBitmap(bitmap);
         //Generating palette
-        Palette palette = Palette.generate(bitmap);
-        // Getting the different types of colors from the Image and adding the colors to the TextViews.
-        Palette.Swatch vibrantSwatch = palette.getVibrantSwatch();
-        if(vibrantSwatch!=null){
-            float[] vibrant = vibrantSwatch.getHsl();
-            textViewVibrant.setBackgroundColor(Color.HSVToColor(vibrant));
-            // The method setStatusBarColor only works above API 21!
-            if (Build.VERSION.SDK_INT >= 21) {
-                getWindow().setStatusBarColor(Color.HSVToColor(vibrant));
+        Palette.Builder paletteBuilder = Palette.from(bitmap);
+        // Use generated palette instance
+        paletteBuilder.generate(new Palette.PaletteAsyncListener() {
+            public void onGenerated(Palette palette) {
+                // Getting the different types of colors from the Image and adding the colors to the TextViews.
+                // Colors
+                int vibrantColor = palette.getVibrantColor(Color.BLACK); // Will return BLACK if it was not available
+                textViewColorVibrant.setBackgroundColor(vibrantColor);
+                textViewColorVibrant.setText(getString(R.string.color_vibrant) + EMPTY_SPACE + Integer.toHexString(vibrantColor));
+                int lightMutedColor = palette.getLightMutedColor(Color.BLACK);
+                textViewColorMutedLight.setBackgroundColor(lightMutedColor);
+                textViewColorMutedLight.setText(getString(R.string.color_muted_light) + EMPTY_SPACE + Integer.toHexString(lightMutedColor));
+                int darkMutedColor = palette.getDarkMutedColor(Color.BLACK);
+                textViewColorMutedDark.setBackgroundColor(darkMutedColor);
+                textViewColorMutedDark.setText(getString(R.string.color_muted_dark) + EMPTY_SPACE + Integer.toHexString(darkMutedColor));
+                // Swatches
+                Palette.Swatch vibrantSwatch = palette.getVibrantSwatch();
+                if (vibrantSwatch != null) {
+                    textViewSwatchVibrant.setBackgroundColor(vibrantSwatch.getRgb());
+                    textViewSwatchVibrant.setText(getString(R.string.swatch_vibrant) + EMPTY_SPACE + Integer.toHexString(vibrantSwatch.getRgb()));
+                }
+                Palette.Swatch vibrantLightSwatch = palette.getLightVibrantSwatch();
+                if (vibrantLightSwatch != null) {
+                    textViewSwatchVibrantLight.setBackgroundColor(vibrantLightSwatch.getRgb());
+                    textViewSwatchVibrantLight.setText(getString(R.string.swatch_vibrant_light) + EMPTY_SPACE + Integer.toHexString(vibrantLightSwatch.getRgb()));
+                }
+                Palette.Swatch vibrantDarkSwatch = palette.getDarkVibrantSwatch();
+                if (vibrantDarkSwatch != null) {
+                    textViewSwatchVibrantDark.setBackgroundColor(vibrantDarkSwatch.getRgb());
+                    textViewSwatchVibrantDark.setText(getString(R.string.swatch_vibrant_dark) + EMPTY_SPACE + Integer.toHexString(vibrantDarkSwatch.getRgb()));
+                }
+                Palette.Swatch mutedSwatch = palette.getMutedSwatch();
+                if (mutedSwatch != null) {
+                    textViewSwatchMuted.setBackgroundColor(mutedSwatch.getRgb());
+                    textViewSwatchMuted.setText(getString(R.string.swatch_muted) + EMPTY_SPACE + Integer.toHexString(mutedSwatch.getRgb()));
+                }
+                Palette.Swatch mutedLightSwatch = palette.getLightMutedSwatch();
+                if (mutedLightSwatch != null) {
+                    textViewSwatchMutedLight.setBackgroundColor(mutedLightSwatch.getRgb());
+                    textViewSwatchMutedLight.setText(getString(R.string.swatch_muted_light) + EMPTY_SPACE + Integer.toHexString(mutedLightSwatch.getRgb()));
+                }
+                Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
+                if (mutedDarkSwatch != null) {
+                    textViewSwatchMutedDark.setBackgroundColor(mutedDarkSwatch.getRgb());
+                    textViewSwatchMutedDark.setText(getString(R.string.swatch_muted_dark) + EMPTY_SPACE + Integer.toHexString(mutedDarkSwatch.getRgb()));
+                }
+                // Changing status bar color
+                // The method setStatusBarColor only works above API 21!
+                if (Build.VERSION.SDK_INT >= 21) {
+                    if (mutedDarkSwatch != null) {
+                        getWindow().setStatusBarColor(mutedDarkSwatch.getRgb());
+                    }
+                }
+                // Changing the background color of the toolbar
+                if (mutedSwatch != null) {
+                    if (actionBar != null) {
+                        actionBar.setBackgroundDrawable(new ColorDrawable(mutedSwatch.getRgb()));
+                    }
+                }
             }
-        }
-        Palette.Swatch vibrantLightSwatch = palette.getLightVibrantSwatch();
-        if(vibrantLightSwatch!=null){
-            textViewVibrantLight.setBackgroundColor(Color.HSVToColor(vibrantLightSwatch.getHsl()));
-            // Changing the background color of the toolbar to Vibrant Light Swatch
-            if(actionBar!=null) {
-                actionBar.setBackgroundDrawable(new ColorDrawable(Color.HSVToColor(vibrantLightSwatch.getHsl())));
-            }
-        }
-        Palette.Swatch vibrantDarkSwatch = palette.getDarkVibrantSwatch();
-        if(vibrantDarkSwatch != null){
-            textViewVibrantDark.setBackgroundColor(Color.HSVToColor(vibrantDarkSwatch.getHsl()));
-        }
-        Palette.Swatch mutedSwatch = palette.getMutedSwatch();
-        if(mutedSwatch!=null) {
-            textViewMuted.setBackgroundColor(Color.HSVToColor(mutedSwatch.getHsl()));
-        }
-        Palette.Swatch mutedLightSwatch = palette.getLightMutedSwatch();
-        if(mutedLightSwatch!=null) {
-            textViewMutedLight.setBackgroundColor(Color.HSVToColor(mutedLightSwatch.getHsl()));
-        }
-        Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
-        if(mutedDarkSwatch!=null) {
-            textViewMutedDark.setBackgroundColor(Color.HSVToColor(mutedDarkSwatch.getHsl()));
-        }
+        });
     }
 
 }
