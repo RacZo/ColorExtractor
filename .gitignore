@@ -11,11 +11,14 @@
 # Generated files
 bin/
 gen/
+out/
 
 # Gradle files
 .gradle/
 build/
 /*/build/
+.idea
+*.iml
 
 # Local configuration file (sdk path, etc)
 local.properties
