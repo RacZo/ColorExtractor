@@ -1,11 +1,11 @@
 # ColorExtractor
+
 Sample ppp to demonstrate how Android's new Palette class can be used to extract colors from an image to change the color of UI elements.
 
 
-<img src="https://github.com/RacZo/ColorExtractor/blob/master/color-extractor.gif" width=270>
+<img src="https://github.com/RacZo/ColorExtractor/blob/master/media/color-extractor.gif" width=270>
 
-
-![Color Extractor Screenshot](color-extractor.png)
+[![Get it on Google Play](media/google-play-badge.png)](https://play.google.com/store/apps/details?id=com.oscarsalguero.colorextractor)
 
 
 License
