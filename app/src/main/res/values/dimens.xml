@@ -6,4 +6,7 @@
     <dimen name="image_view_input_height">256dp</dimen>
     <dimen name="text_view_color_sample_height">40dp</dimen>
     <dimen name="text_view_color_sample_margin_top">4dp</dimen>
+
+    <dimen name="fab_margin">16dp</dimen>
+
 </resources>

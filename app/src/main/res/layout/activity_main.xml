@@ -49,12 +49,12 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="0dp"
+            android:contentDescription="@string/content_description_image_input"
             android:paddingBottom="@dimen/activity_vertical_margin"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
             android:paddingTop="@dimen/activity_vertical_margin"
-            android:src="@drawable/ic_flag_sv"
-            android:contentDescription="@string/content_description_image_input" />
+            android:src="@drawable/ic_flag_sv" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -70,6 +70,7 @@
                     android:id="@+id/text_view_vibrant"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -78,7 +79,7 @@
                     android:id="@+id/text_view_muted_light"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -87,6 +88,7 @@
                     android:id="@+id/text_view_muted_dark"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:text="@string/color_muted_dark"
                     android:textAppearance="?android:attr/textAppearanceMedium"
@@ -96,6 +98,7 @@
                     android:id="@+id/text_view_swatch_vibrant"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -104,6 +107,7 @@
                     android:id="@+id/text_view_swatch_vibrant_light"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -112,7 +116,7 @@
                     android:id="@+id/text_view_swatch_vibrant_dark"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -121,7 +125,7 @@
                     android:id="@+id/text_view_swatch_muted"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -130,7 +134,7 @@
                     android:id="@+id/text_view_swatch_muted_light"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -139,7 +143,7 @@
                     android:id="@+id/text_view_swatch_muted_dark"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/text_view_color_sample_height"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_gravity="start|center_vertical"
                     android:layout_marginTop="@dimen/text_view_color_sample_margin_top"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/white" />
@@ -149,4 +153,17 @@
         </ScrollView>
 
     </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_photo_camera"
+        app:backgroundTint="@color/accent"
+        app:fabSize="normal"
+        app:rippleColor="@color/primary"
+        app:useCompatPadding="true" />
+
 </android.support.design.widget.CoordinatorLayout>

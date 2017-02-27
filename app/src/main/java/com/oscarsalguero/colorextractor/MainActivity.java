@@ -11,25 +11,20 @@
  */
 package com.oscarsalguero.colorextractor;
 
-import android.app.Activity;
-import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.hardware.Camera;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
+import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.ActionBar;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
@@ -40,10 +35,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.oscarsalguero.utils.ImageUtils;
+import com.oscarsalguero.colorextractor.utils.ImageUtils;
+import com.oscarsalguero.colorextractor.utils.PermissionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
 
 /**
  * Sample ppp to demonstrate how Android's new Palette class can be used to extract colors from an image to change the color of UI elements.
@@ -54,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getName();
 
-    private CoordinatorLayout coordinatorLayout;
     private ImageView imageViewInput;
     private TextView textViewColorVibrant;
     private TextView textViewColorMutedDark;
@@ -65,15 +59,14 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewSwatchMuted;
     private TextView textViewSwatchMutedLight;
     private TextView textViewSwatchMutedDark;
-    private Uri outputFileUri;
+
     private static final String EMPTY_SPACE = " ";
 
-    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-
-    /**
-     * Id to identify a camera permission request.
-     */
-    private static final int REQUEST_CAMERA = 0;
+    public static final String FILE_NAME = "temp.jpg";
+    private static final int GALLERY_PERMISSIONS_REQUEST = 0;
+    private static final int GALLERY_IMAGE_REQUEST = 1;
+    public static final int CAMERA_PERMISSIONS_REQUEST = 2;
+    public static final int CAMERA_IMAGE_REQUEST = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.mipmap.ic_launcher);
 
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
         imageViewInput = (ImageView) findViewById(R.id.image_view_input);
         textViewColorVibrant = (TextView) findViewById(R.id.text_view_vibrant);
         textViewColorMutedDark = (TextView) findViewById(R.id.text_view_muted_dark);
@@ -98,10 +90,37 @@ public class MainActivity extends AppCompatActivity {
         textViewSwatchMuted = (TextView) findViewById(R.id.text_view_swatch_muted);
         textViewSwatchMutedLight = (TextView) findViewById(R.id.text_view_swatch_muted_light);
         textViewSwatchMutedDark = (TextView) findViewById(R.id.text_view_swatch_muted_dark);
+
         // Converting the default image into a bitmap
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_flag_sv);
+
         // Updating UI
         updateUI(bitmap);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setVisibility(View.VISIBLE);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder
+                        .setMessage(R.string.dialog_select_prompt)
+                        .setPositiveButton(R.string.dialog_select_gallery, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startGalleryChooser();
+                            }
+                        })
+                        .setNegativeButton(R.string.dialog_select_camera, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startCamera();
+                            }
+                        });
+                builder.create().show();
+            }
+        });
+
     }
 
     @Override
@@ -113,14 +132,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id) {
-            case R.id.action_change_image:
-                openImagePicker();
-                break;
             case R.id.action_about:
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.git_hub_repo_url)));
                 startActivity(intent);
@@ -131,74 +144,106 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void openImagePicker() {
-        outputFileUri = ImageUtils.getOutputMediaFileUriUsingExternalStorageDirectory();
-        final List<Intent> cameraIntents = new ArrayList<Intent>();
-        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-        captureIntent.putExtra("android.intent.extras.CAMERA_FACING", Camera.CameraInfo.CAMERA_FACING_BACK);
-        final PackageManager packageManager = this.getPackageManager();
-        final List<ResolveInfo> listCam = packageManager
-                .queryIntentActivities(captureIntent, 0);
-        for (ResolveInfo res : listCam) {
-            final String packageName = res.activityInfo.packageName;
-            final Intent intent = new Intent(captureIntent);
-            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-            intent.setPackage(packageName);
-            cameraIntents.add(intent);
-        }
-        Intent galleryIntent = new Intent();
-        galleryIntent.setType("image/*");
-        // galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-        galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        // Chooser of filesystem options.
-        final Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Image Source");
-        // Add the camera options.
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
-        startActivityForResult(chooserIntent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-    }
-
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-                if (intent != null && intent.getData() != null) {
-                    try {
-                        // Getting image from gallery
-                        Uri selectedImage = intent.getData();
-                        Bitmap bitmap = ImageUtils.decodeBitmap(this, selectedImage);
-                        setImage(bitmap);
-                    } catch (Exception e) {
-                        Log.e(LOG_TAG, e.getMessage());
-                        e.printStackTrace();
-                    }
+        if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            try {
+                // Getting image from gallery
+                Uri selectedImage = data.getData();
+                Bitmap bitmap = ImageUtils.decodeBitmap(this, selectedImage);
+                setImage(bitmap);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "An error has occurred getting the image from gallery", e);
+            }
+        } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
+            Uri photoUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
+            try {
+                // Getting image from camera
+                Log.d(LOG_TAG, "Reading image captured via camera from URI: " + photoUri.toString());
+                Bitmap bitmapFromIntent = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+                Bitmap bitmapWithCorrectOrientation = ImageUtils.getBitmapWithCorrectOrientation(bitmapFromIntent, photoUri);
+                if (bitmapWithCorrectOrientation != null) {
+                    setImage(bitmapWithCorrectOrientation);
                 } else {
-                    try {
-                        // Getting image from camera
-                        Log.d(LOG_TAG, "Reading image captured via camera from URI: " + outputFileUri.toString());
-                        Bitmap bitmapFromIntent = MediaStore.Images.Media.getBitmap(this.getContentResolver(), outputFileUri);
-                        Bitmap bitmapWithCorrectOrientation = ImageUtils.getBitmapWithCorrectOrientation(bitmapFromIntent, outputFileUri);
-                        if (bitmapWithCorrectOrientation != null) {
-                            setImage(bitmapWithCorrectOrientation);
-                        } else {
-                            setImage(bitmapFromIntent);
-                        }
-                    } catch (Exception e) {
-                        Log.e(LOG_TAG, e.getMessage());
-                        e.printStackTrace();
-                    }
+                    setImage(bitmapFromIntent);
                 }
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "An error has occurred getting the image from camera", e);
             }
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case CAMERA_PERMISSIONS_REQUEST:
+                if (PermissionUtils.permissionGranted(requestCode, CAMERA_PERMISSIONS_REQUEST, grantResults)) {
+                    startCamera();
+                }
+                break;
+            case GALLERY_PERMISSIONS_REQUEST:
+                if (PermissionUtils.permissionGranted(requestCode, GALLERY_PERMISSIONS_REQUEST, grantResults)) {
+                    startGalleryChooser();
+                }
+                break;
+        }
+    }
+
+    /**
+     * Starts gallery chooser
+     */
+    public void startGalleryChooser() {
+        if (PermissionUtils.requestPermission(this, GALLERY_PERMISSIONS_REQUEST, android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Select a photo"),
+                    GALLERY_IMAGE_REQUEST);
+        }
+    }
+
+    /**
+     * Starts the camera
+     */
+    public void startCamera() {
+        if (PermissionUtils.requestPermission(
+                this,
+                CAMERA_PERMISSIONS_REQUEST,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.CAMERA)) {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri photoUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
+        }
+    }
+
+    /**
+     * Gets file
+     * @return
+     */
+    public File getCameraFile() {
+        File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return new File(dir, FILE_NAME);
+    }
+
+    /**
+     * Sets the image
+     * @param bitmap
+     */
     private void setImage(Bitmap bitmap) {
-        // Updating UI
         updateUI(bitmap);
     }
 
+    /**
+     * Updates the UI
+     * @param bitmap
+     */
     private void updateUI(Bitmap bitmap) {
         // Setting image
         imageViewInput.setImageBitmap(bitmap);
@@ -251,80 +296,17 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // Changing status bar color
                 // The method setStatusBarColor only works above API 21!
-                if (Build.VERSION.SDK_INT >= 21) {
-                    if (mutedDarkSwatch != null) {
-                        getWindow().setStatusBarColor(mutedDarkSwatch.getRgb());
-                    }
+                if (mutedDarkSwatch != null) {
+                    getWindow().setStatusBarColor(mutedDarkSwatch.getRgb());
                 }
                 // Changing the background color of the toolbar
                 if (mutedSwatch != null) {
-                    if (actionBar != null) {
-                        actionBar.setBackgroundDrawable(new ColorDrawable(mutedSwatch.getRgb()));
+                    if (getSupportActionBar() != null) {
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(mutedSwatch.getRgb()));
                     }
                 }
             }
         });
-    }
-
-    /**
-     * Called when the 'show camera' button is clicked.
-     * Callback is defined in resource layout definition.
-     */
-    public void showCamera(View view) {
-        Log.i(LOG_TAG, "Show camera button pressed. Checking permission.");
-        // BEGIN_INCLUDE(camera_permission)
-        // Check if the Camera permission is already available.
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Camera permission has not been granted.
-
-            requestCameraPermission();
-
-        } else {
-
-            // Camera permissions is already available, show the camera preview.
-            Log.i(LOG_TAG,
-                    "CAMERA permission has already been granted. Displaying camera preview.");
-            // showCameraPreview();
-        }
-        // END_INCLUDE(camera_permission)
-
-    }
-
-    /**
-     * Requests the Camera permission.
-     * If the permission has been denied previously, a SnackBar will prompt the user to grant the
-     * permission, otherwise it is requested directly.
-     */
-    private void requestCameraPermission() {
-        Log.i(LOG_TAG, "CAMERA permission has NOT been granted. Requesting permission.");
-
-        // BEGIN_INCLUDE(camera_permission_request)
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                android.Manifest.permission.CAMERA)) {
-            // Provide an additional rationale to the user if the permission was not granted
-            // and the user would benefit from additional context for the use of the permission.
-            // For example if the user has previously denied the permission.
-            Log.i(LOG_TAG,
-                    "Displaying camera permission rationale to provide additional context.");
-            Snackbar.make(coordinatorLayout, R.string.permission_camera_rationale,
-                    Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            ActivityCompat.requestPermissions(MainActivity.this,
-                                    new String[]{android.Manifest.permission.CAMERA},
-                                    REQUEST_CAMERA);
-                        }
-                    })
-                    .show();
-        } else {
-
-            // Camera permission has not been granted yet. Request it directly.
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA},
-                    REQUEST_CAMERA);
-        }
-        // END_INCLUDE(camera_permission_request)
     }
 
 }

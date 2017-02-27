@@ -9,7 +9,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.oscarsalguero.utils;
+package com.oscarsalguero.colorextractor.utils;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -17,14 +17,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Image Utilities.
@@ -95,16 +91,5 @@ public class ImageUtils {
         return resizedBitmap;
     }
 
-    public static Uri getOutputMediaFileUriUsingExternalStorageDirectory() {
-        String folderName = "com.oscarsalguero.colorextractor";
-        File imagesFolder = new File(Environment.getExternalStorageDirectory() + File.separator + folderName + File.separator);
-        imagesFolder.mkdirs();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileName = "colorext_" + timeStamp + ".jpg";
-        File imageFile = new File(imagesFolder, fileName);
-        Uri outputFileUri = Uri.fromFile(imageFile);
-        Log.d(LOG_TAG, "Output file URI: " + outputFileUri.toString());
-        return outputFileUri;
-    }
 
 }
