@@ -14,4 +14,13 @@
     <string name="swatch_muted_light">Swatch Muted Light</string>
     <string name="swatch_muted_dark">Swatch Muted Dark</string>
 
+    <string name="ok">OK</string>
+    <string name="camera_unavailable"><b>Camera could not be opened.</b>\nThis occurs when the camera is not available (for example it is already in use) or if the system has denied access (for example when camera access has been disabled).</string>
+    <string name="show_camera">Show camera preview</string>
+    <string name="permision_available_camera">Camera Permission has been granted. Preview can now be opened.</string>
+    <string name="permissions_not_granted">Permissions were not granted.</string>
+    <string name="permission_camera_rationale">Camera permission is needed to show the camera preview.</string>
+
+    <string name="content_description_image_input">Input Image</string>
+
 </resources>
